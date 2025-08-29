@@ -54,5 +54,5 @@ export default tseslint.config(
     files: ["**/*.md"],
     plugins: { markdown },
     processor: markdown.processors.markdown,
-  }
+  },
 );

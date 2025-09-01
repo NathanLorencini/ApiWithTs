@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import type { Request, RequestHandler, Response } from "express";
-import { StatusCodes } from "http-status-codes";
+import type { Request, Response } from "express";
 import * as yup from 'yup';
+import { validation } from "../../shared/middlewares";
 
 interface Icity {
     name: string;
@@ -10,56 +10,19 @@ interface Icity {
 }
 
 interface IFilter {
-    filter: string;
+    filter?: string;
 }
 
-const bodyValidation: yup.ObjectSchema<Icity> = yup.object().shape({
-    name: yup.string().required().min(3),
-    state: yup.string().required(),
-    country: yup.string().required(),
-});
-
-const queryValidation: yup.ObjectSchema<IFilter> = yup.object().shape({
-    filter: yup.string().required().min(3),
-
-});
-
-
-export const createBodyValidator: RequestHandler = async (req, res, next) => {
-    try {
-        await bodyValidation.validate(req.body, { abortEarly: false });
-        return next();
-    } catch (error) {
-        const yupError = error as yup.ValidationError;
-        const errors: Record<string, string> = {};
-
-        yupError.inner.forEach(err => {
-            if (err.path)
-                errors[err.path] = err.message;
-        });
-        return res.status(StatusCodes.BAD_REQUEST).json({
-            errors: errors
-        })
-    }
-};
-
-export const creatQueryValidator: RequestHandler = async (req, res, next) => {
-    try {
-        await queryValidation.validate(req.query, { abortEarly: false });
-        return next();
-    } catch (error) {
-        const yupError = error as yup.ValidationError;
-        const errors: Record<string, string> = {};
-
-        yupError.inner.forEach(err => {
-            if (err.path)
-                errors[err.path] = err.message;
-        });
-        return res.status(StatusCodes.BAD_REQUEST).json({
-            errors: errors
-        })
-    }
-}
+export const createValidation = validation((getSchema) => ({
+    body: getSchema<Icity>(yup.object().shape({
+        name: yup.string().required().min(3),
+        state: yup.string().required().min(2),
+        country: yup.string().required(),
+    })),
+    query: getSchema<IFilter>(yup.object().shape({
+        filter: yup.string().required().min(3),
+    }))
+}));
 
 export const Create = async (req: Request<{}, {}, Icity>, res: Response) => {
     console.log(req.body);

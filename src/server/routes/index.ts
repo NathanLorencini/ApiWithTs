@@ -7,8 +7,7 @@ router.get('/', (_, res) => {
 });
 
 router.post('/citys',
-    CityController.createBodyValidator,
-    CityController.creatQueryValidator,
+    CityController.createValidation,
     CityController.Create);
 
 export { router }
